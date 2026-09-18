@@ -1,11 +1,9 @@
 # Diagrama — Arquitectura jerárquica (Integrante 2)
 
-Este diagrama corresponde exactamente al código en `hierarchical/` y
-`shared/`. Las líneas continuas son relaciones de delegación implementadas
-con `Agent.as_tool()` del SDK de OpenAI Agents. Las líneas punteadas
-marcan los componentes **placeholder/provisionales** que deben
-reemplazarse por las entregas reales de Integrante 1 (Open-Meteo) e
-Integrante 3 (FAQs del Lab 4, almacenamiento de citas).
+Este diagrama corresponde al código en `hierarchical/` y `shared/`. Las líneas
+continuas son relaciones de delegación implementadas con `Agent.as_tool()`.
+FAQs y reservas siguen provisionales hasta la entrega del Integrante 3; la
+integración real con Open-Meteo ya está conectada mediante el módulo común.
 
 ```mermaid
 graph TD
@@ -17,8 +15,10 @@ graph TD
     OM -->|"as_tool: consultar_clima"| WA["Agente Clima<br/>(hierarchical/weather_agent.py)"]
     OM -->|"as_tool: gestionar_reserva"| BA["Agente Reservas<br/>(hierarchical/booking_agent_stub.py)"]
 
-    WA -->|"llamada de función pura<br/>(no es un agente ni un tool call)"| EV["Evaluador Climático<br/>(shared/weather_evaluator.py)<br/>ideal / marginal / prohibido<br/>+ motivos + restricciones"]
-    WA -.->|"obtiene WeatherReading<br/>PLACEHOLDER"| WP["weather_provider_stub.py<br/>(simula Open-Meteo)"]
+    WA -->|"llamada de función pura"| WS["Servicio Climático<br/>(shared/weather_service.py)"]
+    WS --> EV["Evaluador Climático<br/>(shared/weather_evaluator.py)<br/>ideal / marginal / prohibido<br/>+ motivos + restricciones"]
+    WS -->|"consulta y adapta"| WP["shared/open_meteo_client.py<br/>(Open-Meteo real)"]
+    WP --> API[("Open-Meteo API")]
 
     F -.->|"PLACEHOLDER"| FKB[("Mini base de FAQs<br/>de ejemplo")]
     BA -.->|"PLACEHOLDER"| BKB[("Citas en memoria<br/>sin dedup")]
@@ -26,8 +26,8 @@ graph TD
     classDef mine fill:#d4edda,stroke:#2e7d32,color:#1b1b1b;
     classDef stub fill:#fdf3d7,stroke:#a0522d,stroke-dasharray: 4 2,color:#1b1b1b;
 
-    class S,OM,WA,EV mine;
-    class F,BA,WP,FKB,BKB stub;
+    class S,OM,WA,WS,EV,WP mine;
+    class F,BA,FKB,BKB stub;
 ```
 
 ## Equivalente en texto (por si no se renderiza Mermaid)
@@ -57,7 +57,7 @@ graph TD
                                    ▲
                                    │ obtiene WeatherReading
                                    │
-                        weather_provider_stub.py (placeholder de Open-Meteo)
+                     shared/open_meteo_client.py (Open-Meteo real)
 ```
 
 ## Puntos clave que el diagrama hace evidentes

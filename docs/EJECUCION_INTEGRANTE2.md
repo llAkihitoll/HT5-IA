@@ -59,13 +59,10 @@ mostrando cómo delega a cada rama de la jerarquía:
 4. Una consulta de clima fuera del horizonte de pronóstico de Open-Meteo,
    para mostrar el manejo de esa limitación.
 
-**Nota:** el proveedor de datos climáticos (`weather_provider_stub.py`) y
-los agentes de FAQs/Reservas son *placeholders provisionales* del
-Integrante 2 (ver comentarios en esos archivos). El programa demo sigue
-siendo válido para demostrar la arquitectura jerárquica; cuando
-Integrante 1 e Integrante 3 entreguen sus módulos reales, solo cambian
-esos tres archivos — el Supervisor, el Submanager, el Agente de Clima y
-el Evaluador Climático no necesitan modificarse.
+**Nota de integración:** el proveedor simulado fue reemplazado por
+`shared/open_meteo_client.py`, la integración real del Integrante 1. Los
+agentes de FAQs y Reservas continúan como placeholders hasta que el Integrante
+3 entregue sus módulos definitivos.
 
 ## 5. Ejecutar las pruebas
 
@@ -107,18 +104,15 @@ Ejemplos de mensajes útiles para ver cada rama de la jerarquía en acción:
 
 - FAQs: `"¿Puedo cancelar mi cita?"`
 - Clima ideal/marginal/prohibido: cambia la fecha en un mensaje como
-  `"¿El clima permite saltar el YYYY-MM-DD?"` — como
-  `weather_provider_stub.py` genera datos deterministas a partir de la
-  fecha, distintas fechas producen distintos estados (ideal/marginal/
-  prohibido) de forma reproducible.
+  `"¿El clima permite saltar el YYYY-MM-DD?"`. El resultado proviene del
+  pronóstico real de Open-Meteo, por lo que puede variar entre ejecuciones.
 - Reservas: `"Calendariza mi salto para el YYYY-MM-DD, mi nombre es ..."`
   y observa cómo el Submanager consulta el clima antes de confirmar.
 
 ## 7. Alcance de esta parte
 
-Esta implementación cubre exclusivamente la responsabilidad del
-Integrante 2: arquitectura jerárquica, evaluador climático compartido y
-sus pruebas de límites. No incluye la arquitectura centralizada, la
-descentralizada, la integración real con Open-Meteo, la búsqueda real de
-FAQs del Lab 4, ni el almacenamiento de citas con prevención de
-duplicados — esas partes las integran Integrante 1 e Integrante 3.
+Esta implementación cubre la responsabilidad del Integrante 2: arquitectura
+jerárquica, evaluador climático compartido y pruebas de límites. La integración
+real con Open-Meteo ya fue incorporada como módulo compartido por el Integrante
+1. Las FAQs reales, el almacenamiento definitivo y la arquitectura
+descentralizada corresponden al Integrante 3.
