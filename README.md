@@ -102,13 +102,4 @@ Python local usado para verificar la consulta real.
 - [Respuestas consolidadas](docs/RESPUESTAS.md)
 - [PDF de entrega](output/pdf/respuestas_lab5.pdf)
 
-Las guías `EJECUCION_INTEGRANTE1.md` y `EJECUCION_INTEGRANTE2.md` conservan
-los detalles de las contribuciones iniciales. Esta guía describe la integración
-actual; los archivos con sufijo `_stub.py` son ahora alias de especialistas reales.
 
-## Autores
-
-- Juan Jose Rivas Alvarez — carnet universitario 24856 — arquitectura
-  centralizada e integración Open-Meteo.
-- Contribuciones de integrantes 2 y 3 identificadas por sus commits; completar
-  sus nombres y carnets antes de entregar el informe si el curso los solicita.
