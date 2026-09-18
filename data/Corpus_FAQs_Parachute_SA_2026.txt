@@ -843,4 +843,3 @@ PREGUNTA: ¿Puedo cambiar mi cita por prevención si pronostican lluvia?
 RESPUESTA: Respuesta detallada para la consulta sobre '¿Puedo cambiar mi cita por prevención si pronostican lluvia?' en el contexto del evento de Parachute S.A. del 29 de septiembre de 2026 en Guatemala. Categoría oficial: [Clima y Contingencias]. Esta política y procedimiento es dictado bajo las normativas vigentes de seguridad aeronáutica y los estándares internacionales de paracaidismo tándem. Para más detalles específicos sobre la ficha #120, consulte directamente con la central de atención al cliente de Parachute S.A. a través de soporte@parachutesa.gt.
 METADATA: {"empresa": "Parachute S.A.", "evento": "Gran Evento de Paracaidismo Guatemala 2026", "fecha": "2026-09-29", "unidad_medida": "Sistema Métrico Decimal"}
 ------------------------------------------------------------
-
