@@ -1,3 +1,7 @@
+> Nota de integración: las FAQs y reservas provisionales fueron sustituidas
+> por los módulos compartidos del integrante 3. Consulta el README actual
+> para instalar PostgreSQL y cargar el corpus antes de ejecutar esta arquitectura.
+
 # Instrucciones de ejecución — Arquitectura jerárquica (Integrante 2)
 
 Esta sección cubre únicamente la parte del Integrante 2 (arquitectura

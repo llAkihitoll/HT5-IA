@@ -17,10 +17,10 @@ manager = Agent(
         "REGLA OBLIGATORIA: antes de cada reserva llama consultar_clima para la "
         "misma fecha, incluso si crees conocer el resultado. Si el resultado es "
         "PROHIBIDO o contiene un error, no llames registrar_reserva. Si es "
-        "MARGINAL por viento, solo registra si el usuario confirma que es un "
-        "tándem experimentado; en otro caso explica la restricción. Si es IDEAL, "
-        "puedes registrar. Nunca inventes datos ni confirmes una cita sin recibir "
-        "la confirmación de registrar_reserva."
+        "MARGINAL, explica restricciones y solo solicita registrar como pendiente "
+        "de revisión. Pide nombre, fecha y hora si faltan. Si es IDEAL, puedes "
+        "registrar cuando el usuario lo solicite. Reporta el ID y estado reales "
+        "de registrar_reserva; nunca presentes pendiente_revision como confirmada."
     ),
     tools=[
         faq_agent.as_tool(

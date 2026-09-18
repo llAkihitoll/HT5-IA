@@ -25,7 +25,9 @@ operations_manager = Agent(
         "Regla de negocio obligatoria: SIEMPRE consulta el clima antes de "
         "calendarizar una cita. Si el clima está 'prohibido', no calendarices "
         "y explica el motivo al usuario. Si está 'marginal', informa las "
-        "restricciones aplicables antes de continuar con la reserva."
+        "restricciones aplicables y explica que se registra pendiente de revisión. "
+        "Pide nombre, fecha y hora si faltan; nunca llames confirmada a una cita "
+        "pendiente_revision. Reporta el ID y estado devueltos por gestionar_reserva."
     ),
     tools=[
         weather_agent.as_tool(

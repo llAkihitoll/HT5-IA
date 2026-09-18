@@ -34,7 +34,7 @@ DEMO_QUERIES = [
     ),
     (
         "Reservas (consulta clima antes de calendarizar)",
-        "Quiero calendarizar una cita de salto para el 2026-09-22, mi nombre es Juana Pérez.",
+        "Quiero calendarizar una cita de salto para el 2026-09-22, a las 09:00, mi nombre es Juana Pérez.",
     ),
     (
         "Clima (fuera del horizonte de pronóstico de Open-Meteo)",

@@ -18,13 +18,19 @@ from centralized.manager import manager  # noqa: E402
 
 def run_cli() -> None:
     print("Parachute S.A. — arquitectura centralizada (escribe 'salir' para terminar)")
+    history = []
     while True:
-        message = input("\nUsuario: ").strip()
+        try:
+            message = input("\nUsuario: ").strip()
+        except (EOFError, KeyboardInterrupt):
+            print("\nHasta luego.")
+            break
         if message.casefold() in {"salir", "exit", "quit"}:
             break
         if not message:
             continue
-        result = Runner.run_sync(manager, message)
+        result = Runner.run_sync(manager, history + [{"role": "user", "content": message}])
+        history = result.to_input_list()
         print(f"Manager: {result.final_output}")
 
 

@@ -39,15 +39,15 @@ class DateValidationTests(unittest.TestCase):
             REFERENCE_DATE,
         )
 
-    def test_accepts_day_16(self):
+    def test_accepts_last_day_of_16_day_window(self):
         self.assertEqual(
-            validate_forecast_date("2026-10-04", today=REFERENCE_DATE),
-            date(2026, 10, 4),
+            validate_forecast_date("2026-10-03", today=REFERENCE_DATE),
+            date(2026, 10, 3),
         )
 
-    def test_rejects_day_17(self):
+    def test_rejects_sixteen_days_ahead(self):
         with self.assertRaisesRegex(WeatherProviderError, "hasta 16 días"):
-            validate_forecast_date("2026-10-05", today=REFERENCE_DATE)
+            validate_forecast_date("2026-10-04", today=REFERENCE_DATE)
 
     def test_rejects_past_date(self):
         with self.assertRaisesRegex(WeatherProviderError, "ya pasó"):
@@ -109,3 +109,16 @@ class ResponseValidationTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class InvalidReadingTests(unittest.TestCase):
+    def test_nonfinite_or_out_of_range_values_are_rejected(self):
+        for field, value in [('wind_speed_10m_max', float('nan')),
+                             ('wind_gusts_10m_max', float('inf')),
+                             ('precipitation_sum', -1), ('cloud_cover_max', 101),
+                             ('temperature_2m_mean', True)]:
+            with self.subTest(field=field, value=value):
+                payload = valid_payload()
+                payload['daily'][field] = [value]
+                with self.assertRaises(WeatherProviderError):
+                    parse_daily_forecast(payload, REQUESTED_DATE)
