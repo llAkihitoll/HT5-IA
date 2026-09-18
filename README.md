@@ -1,67 +1,114 @@
 # HT5 — Sistemas multiagentes para Parachute S.A.
 
-Implementación de tres estilos de orquestación para FAQs, evaluación climática
-y calendarización de saltos.
+Tres programas resuelven FAQs, consulta climática y registro de citas con las
+mismas integraciones. Las diferencias están en la orquestación.
 
-## Estado de integración
-
-| Componente | Estado | Ubicación |
+| Arquitectura | Programa | Coordinación |
 |---|---|---|
-| Arquitectura centralizada | Completa | `centralized/` |
-| Arquitectura jerárquica | Completa; ya usa Open-Meteo real | `hierarchical/` |
-| Arquitectura descentralizada | Pendiente de Integrante 3 | `decentralized/` |
-| Cliente Open-Meteo compartido | Completo | `shared/open_meteo_client.py` |
-| Evaluación de umbrales | Completa | `shared/weather_evaluator.py` |
-| FAQs del Lab 4 y reservas persistentes | Pendientes de Integrante 3 | — |
-| PDF con ambas respuestas | Pendiente de Integrante 3 | — |
+| Centralizada | `python -m centralized.main` | Manager con especialistas como herramientas |
+| Jerárquica | `python -m hierarchical.main` | Supervisor → submanager → especialistas |
+| Descentralizada | `python -m decentralized.main` | FAQs ↔ clima ↔ reservas mediante handoffs |
 
-La arquitectura centralizada contiene FAQs y reservas provisionales para poder
-ejecutar el flujo completo. Están aisladas de la integración climática y se
-pueden reemplazar sin modificar Open-Meteo ni sus reglas.
+La parte 3 reemplaza las FAQs y reservas provisionales de las otras dos
+arquitecturas por búsqueda semántica y persistencia compartidas.
 
-## Diseño compartido
+## Instalación
 
-```text
-Arquitectura centralizada ─┐
-Arquitectura jerárquica  ──┼─> weather_service ─> Open-Meteo
-Arquitectura descentralizada┘          │
-                                      └─> weather_evaluator
-```
-
-El cliente consulta las coordenadas **14.013722, -90.771611**, valida que la
-fecha no haya pasado ni exceda 16 días, solicita las cinco variables y las
-adapta a `WeatherReading`. El evaluador puro devuelve `ideal`, `marginal` o
-`prohibido` con motivos y restricciones.
-
-## Instalación rápida
+Python 3.10 o superior y Docker con Compose para PostgreSQL.
 
 ```bash
 python -m venv .venv
-```
-
-```powershell
-.venv\Scripts\Activate.ps1
+# macOS/Linux:
+source .venv/bin/activate
+# Windows PowerShell:
+# .venv\Scripts\Activate.ps1
 python -m pip install -r requirements.txt
-Copy-Item .env.example .env
 ```
 
-Configura `OPENAI_API_KEY` en `.env` y ejecuta:
+Copiar `.env.example` a `.env` (`cp` en macOS/Linux o `Copy-Item` en PowerShell).
+Configurar `OPENAI_API_KEY`. `OPENAI_MODEL` permite elegir el modelo de la CLI
+descentralizada; vacío conserva el predeterminado del SDK.
 
 ```bash
-python -m centralized.main
-python -m hierarchical.main
+docker compose up -d --wait
+python -m shared.faq_store.load_data
+python -m decentralized.main
 ```
 
-Pruebas:
+El cargador adapta el Lab 4: 120 FAQs, seis categorías, embeddings locales
+`all-MiniLM-L6-v2` de 384 dimensiones, PostgreSQL + pgvector y carga idempotente.
+La primera carga necesita descargar el modelo. La búsqueda usa distancia coseno,
+umbral configurable y devuelve evidencia con `faq_id`. No hay respuestas fijas
+ni fallback al conocimiento general si falla la base.
+
+El contenedor del Lab 5 usa el puerto **5433** para no interferir con el Lab 4.
+Si ya tienes la base del Lab 4 cargada, puedes apuntar `DATABASE_URL` a esa base
+y omitir levantar/cargar otra. Las reservas van a `BOOKINGS_DB` (SQLite local),
+independiente de PostgreSQL. `docker compose down` detiene la base sin borrar
+el volumen.
+
+## Comportamiento
+
+- Open-Meteo consulta las coordenadas **14.013722, -90.771611** mediante `daily`:
+  temperatura media, precipitación acumulada y máximos de viento, ráfagas y nubes.
+- Horizonte: **hoy hasta hoy + 15 días**, 16 fechas en `America/Guatemala`.
+- `shared/weather_evaluator.py` conserva los umbrales del integrante 2.
+- `shared/bookings.py` vuelve a consultar y evaluar el clima antes de escribir.
+  El modelo no puede proporcionar un veredicto para omitir esta comprobación.
+- Ideal: cita `confirmada`. Marginal: `pendiente_revision`, conservando las
+  restricciones (incluido tándem experimentado). Prohibido/error: no se guarda.
+  La política de dejar marginales pendientes es una decisión de implementación.
+- Fecha, nombre y hora deben acordarse con el usuario. La hora es de Guatemala;
+  el pronóstico es diario. No se implementan cupos, pagos, cancelación ni
+  reprogramación. El registro es local, no un evento de Google Calendar.
+- La combinación fecha + hora + nombre normalizado evita duplicados, incluso
+  con llamadas concurrentes o reinicios. Personas homónimas en la misma hora
+  no se distinguen en esta versión académica.
+- La CLI descentralizada conserva historial y agente activo entre mensajes,
+  muestra cada handoff y limita a 12 turnos de modelo por mensaje. `salir`,
+  `Bye`, Ctrl+C y EOF terminan la sesión. El historial no persiste al cerrar.
+
+## Validación
 
 ```bash
 python -m pytest -q
 ```
 
-Consulta `docs/EJECUCION_INTEGRANTE1.md` y
-`docs/EJECUCION_INTEGRANTE2.md`. Los diagramas están en `diagrams/`.
+La suite valida umbrales, fechas, datos inválidos, corpus, SQL de búsqueda,
+reservas persistentes/concurrentes y handoffs mediante el Runner real del SDK
+con un modelo simulado. No requiere claves ni servicios externos.
+
+En esta entrega se verificó además una consulta real a Open-Meteo. La sesión
+con LLM y la búsqueda contra PostgreSQL real no se verificaron en este entorno:
+no había API key configurada ni Docker disponible. Las pruebas simuladas no
+miden calidad de respuestas, latencia ni costo real del modelo.
+
+En macOS, si Python no encuentra certificados TLS, configura su almacén de
+certificados. Por ejemplo, para una terminal con el entorno activado:
+
+```bash
+export SSL_CERT_FILE="$(python -m certifi)"
+```
+
+No deshabilites la validación HTTPS. Este ajuste solo fue necesario en el
+Python local usado para verificar la consulta real.
+
+## Documentación
+
+- [Parte 3: ejecución, pruebas e integración](docs/EJECUCION_INTEGRANTE3.md)
+- [Diagrama descentralizado](diagrams/decentralized_architecture.md)
+- [Diagrama centralizado](diagrams/centralized_architecture.md)
+- [Diagrama jerárquico](diagrams/hierarchical_architecture.md)
+- [Respuestas consolidadas](docs/RESPUESTAS.md)
+- [PDF de entrega](output/pdf/respuestas_lab5.pdf)
+
+Las guías `EJECUCION_INTEGRANTE1.md` y `EJECUCION_INTEGRANTE2.md` conservan
+los detalles de las contribuciones iniciales. Esta guía describe la integración
+actual; los archivos con sufijo `_stub.py` son ahora alias de especialistas reales.
 
 ## Autores
 
 - Juan Jose Rivas Alvarez — carnet universitario 24856 — arquitectura
   centralizada e integración Open-Meteo.
+- Contribuciones de integrantes 2 y 3 identificadas por sus commits; completar
+  sus nombres y carnets antes de entregar el informe si el curso los solicita.

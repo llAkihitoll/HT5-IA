@@ -1,3 +1,8 @@
+> Borrador original del integrante 2. La respuesta consolidada tras integrar
+> las tres arquitecturas está en [RESPUESTAS.md](RESPUESTAS.md). La regla de
+> clima se garantiza ahora en el servicio compartido de reservas, también
+> para handoffs, sin duplicarla en los prompts.
+
 # Pregunta 1 — Integrante 2
 
 **¿Qué arquitectura/arquitecturas resuelven mejor este problema? ¿Por qué?**

@@ -7,8 +7,10 @@ implementaciones pueden reutilizarlo sin cambiar la lógica de integración.
 from __future__ import annotations
 
 import json
+import math
 from datetime import date, datetime
 from typing import Any, Callable
+from zoneinfo import ZoneInfo
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
 from urllib.request import urlopen
@@ -45,19 +47,21 @@ def validate_forecast_date(fecha_iso: str, *, today: date | None = None) -> date
 
     try:
         requested = datetime.strptime(fecha_iso, "%Y-%m-%d").date()
+        if requested.isoformat() != fecha_iso:
+            raise ValueError
     except ValueError as exc:
         raise WeatherProviderError(
             f"Fecha inválida: '{fecha_iso}'. Usa el formato YYYY-MM-DD."
         ) from exc
 
-    reference = today or date.today()
+    reference = today or datetime.now(ZoneInfo(TIMEZONE)).date()
     days_ahead = (requested - reference).days
     if days_ahead < 0:
         raise WeatherProviderError(f"La fecha {fecha_iso} ya pasó.")
-    if days_ahead > MAX_FORECAST_DAYS:
+    if days_ahead >= MAX_FORECAST_DAYS:
         raise WeatherProviderError(
             f"No es posible consultar el pronóstico para {fecha_iso}: "
-            f"Open-Meteo solo permite consultar hasta {MAX_FORECAST_DAYS} días."
+            f"Open-Meteo solo permite consultar hasta {MAX_FORECAST_DAYS} días incluyendo hoy."
         )
     return requested
 
@@ -103,7 +107,14 @@ def _daily_value(daily: dict[str, Any], field: str, index: int) -> float:
             f"Open-Meteo no devolvió el dato diario requerido: {field}."
         )
     try:
-        return float(values[index])
+        value = float(values[index])
+        if isinstance(values[index], bool) or not math.isfinite(value):
+            raise ValueError
+        if field != "temperature_2m_mean" and value < 0:
+            raise ValueError
+        if field == "cloud_cover_max" and value > 100:
+            raise ValueError
+        return value
     except (TypeError, ValueError) as exc:
         raise WeatherProviderError(
             f"Open-Meteo devolvió un valor inválido para {field}."
